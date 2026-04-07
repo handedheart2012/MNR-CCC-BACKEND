@@ -23,14 +23,39 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => console.error('❌ MongoDB Error:', err));
 
-// Routes (we'll add these next)
+// Import Routes
+const authRoutes = require('./routes/auth');
+const playerRoutes = require('./routes/player');
+const shopRoutes = require('./routes/shop');
+const lobbyRoutes = require('./routes/lobby');
+
+// Use Routes
+app.use('/auth', authRoutes);
+app.use('/api/player', playerRoutes);
+app.use('/api/shop', shopRoutes);
+app.use('/api/lobby', lobbyRoutes);
+
+// Root endpoint
 app.get('/', (req, res) => {
-  res.json({ message: 'MNR-CCC Backend API' });
+  res.json({ 
+    message: 'MNR-CCC Backend API',
+    endpoints: {
+      auth: '/auth/discord',
+      player: '/api/player/:discordId',
+      shop: '/api/shop/buy, /api/shop/sell',
+      lobby: '/api/lobby/rooms, /api/lobby/create, /api/lobby/join/:roomId'
+    }
+  });
 });
 
-// WebSocket for PVP (we'll add logic later)
+// WebSocket for PVP (we'll add battle logic later)
 io.on('connection', (socket) => {
   console.log('Player connected:', socket.id);
+  
+  socket.on('join_room', (roomId) => {
+    socket.join(roomId);
+    console.log(`Player ${socket.id} joined room ${roomId}`);
+  });
   
   socket.on('disconnect', () => {
     console.log('Player disconnected:', socket.id);
@@ -39,4 +64,6 @@ io.on('connection', (socket) => {
 
 // Start Server
 const PORT = process.env.PORT || 3000;
-server​​​​​​​​​​​​​​​​
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
